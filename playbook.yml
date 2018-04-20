@@ -1,30 +1,56 @@
 ---
 - hosts: rpis
-  #sudo: true
   tasks:
-    - name: test connection
-      ping:
-
-    - name: Ensure group "ansible" exists
+  #    - name: test connection
+  #      ping:
+  #
+    - name: Ensure groups ansible and docker exist
       become: yes
       group:
-        name: ansible
+        name: "{{ item }}"
         state: present
+      with_items:
+        - ansible
+        - docker
+  
+    - name: Load passwords from vault
+      #Passwords must be stored in a file located in vars/user_passwords.yml. This file contains entries for each account to create, associated to passwords hased with sha512
+      #These can be generated using:
+      #mkpasswd --method=sha-512
+      #Resulting line should look like this:
+      #username: '$6$LLzRkpZJM1b$CvFO*******************************************************************9uYUB0gHHgZQfc/'
+      include_vars:
+        file: user_passwords.yml
+        name: user_passwords
 
-    - name: Ensure group "docker" exists
-      become: yes
-      group:
-        name: docker
-        state: present
+#    - debug:
+#        var: user_passwords
 
     - name: Create users
       become: yes
       user:
-        name: alex
-        password: '$6$LLzRkpZJM1b$CvFOSwr5phKUQE4P0Cj.Mq09sFevxJ9lZ4uWnjQAile28bIljduBCj7K0CKGdxH/0mj3Y4N9uYUB0gHHgZQfc/'
+        name: "{{item.key}}"
+        password: "{{item.value}}"
         groups: ansible, docker, sudo   # Empty by default.
+      with_dict: "{{ user_passwords }}"
         #state: present
         #shell: /bin/bash       # Defaults to /bin/bash
         #system: no             # Defaults to no
         #createhome: yes        # Defaults to yes
         #home: /home/alex  # Defaults to /home/<username>
+
+    - name: Update repositories cache and install usefull packages
+      become: yes
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+        cache_valid_time: 3600
+      with_items:
+        - git
+        - vim-nox
+#        - python3-pip
+
+    - name: Remove dependencies that are no longer required
+      become: yes
+      apt:
+        autoremove: yes
