@@ -1,5 +1,30 @@
 ---
 - hosts: rpis
+  #sudo: true
   tasks:
     - name: test connection
       ping:
+
+    - name: Ensure group "ansible" exists
+      become: yes
+      group:
+        name: ansible
+        state: present
+
+    - name: Ensure group "docker" exists
+      become: yes
+      group:
+        name: docker
+        state: present
+
+    - name: Create users
+      become: yes
+      user:
+        name: alex
+        password: '$6$LLzRkpZJM1b$CvFOSwr5phKUQE4P0Cj.Mq09sFevxJ9lZ4uWnjQAile28bIljduBCj7K0CKGdxH/0mj3Y4N9uYUB0gHHgZQfc/'
+        groups: ansible, docker, sudo   # Empty by default.
+        #state: present
+        #shell: /bin/bash       # Defaults to /bin/bash
+        #system: no             # Defaults to no
+        #createhome: yes        # Defaults to yes
+        #home: /home/alex  # Defaults to /home/<username>
