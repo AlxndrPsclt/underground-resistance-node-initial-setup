@@ -1,5 +1,9 @@
 *.swp
 playbook.retry
+brouillon.md
+
+
 vars/users/user_passwords.yml
 vars/users/user_keys/*
 !vars/users/user_keys/user1.example.pub
+
