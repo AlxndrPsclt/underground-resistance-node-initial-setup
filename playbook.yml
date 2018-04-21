@@ -4,6 +4,9 @@
   #    - name: test connection
   #      ping:
   #
+##################
+#Users and groups#
+##################
     - name: Ensure groups ansible and docker exist
       become: yes
       group:
@@ -39,6 +42,11 @@
         #createhome: yes        # Defaults to yes
         #home: /home/alex  # Defaults to /home/<username>
 
+
+
+#####################
+#Installing software#
+#####################
     - name: Update repositories cache and install usefull packages
       become: yes
       apt:
@@ -54,3 +62,21 @@
       become: yes
       apt:
         autoremove: yes
+
+
+################################
+#Creating directories structure#
+################################
+    - name: ansible create multiple directory example
+      become: yes
+      file:
+        path: "{{ item.dest }}"
+        group: "{{ item.group }}"
+        mode: "{{ item.mode }}"
+        state: directory
+      with_items:
+        - { dest: '/docker', group: 'root', mode: '0755' }
+        - { dest: '/docker/src', group: 'docker', mode: '0775' }
+        - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
+        - { dest: '/docker/configs', group: 'docker', mode: '0775' }
+        - { dest: '/ansible', group: 'ansible', mode: '0775' }
