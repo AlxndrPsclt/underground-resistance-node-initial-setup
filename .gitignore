@@ -1,3 +1,4 @@
 *.swp
 playbook.retry
-user_passwords.yml
+vars/users/user_passwords.yml
+vars/users/user_keys/*

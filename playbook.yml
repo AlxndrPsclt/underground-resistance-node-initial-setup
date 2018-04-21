@@ -23,7 +23,7 @@
       #Resulting line should look like this:
       #username: '$6$LLzRkpZJM1b$CvFO*******************************************************************9uYUB0gHHgZQfc/'
       include_vars:
-        file: user_passwords.yml
+        file: users/user_passwords.yml
         name: user_passwords
 
 #    - debug:
@@ -62,7 +62,7 @@
       become: yes
       apt:
         autoremove: yes
-
+#TODO: Install docker, bonjour
 
 ################################
 #Creating directories structure#
@@ -80,3 +80,14 @@
         - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
         - { dest: '/docker/configs', group: 'docker', mode: '0775' }
         - { dest: '/ansible', group: 'ansible', mode: '0775' }
+
+
+
+############################
+#Syncronise time on servers#
+############################
+
+
+######################
+#Set hostnames an IPs#
+######################
