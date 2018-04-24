@@ -1,4 +1,5 @@
 ---
+#:TODO: When the time comes, split this file in different roles
 - hosts: rpis
   tasks:
   #    - name: test connection
@@ -17,11 +18,7 @@
         - docker
   
     - name: Load passwords from vault
-      #Passwords must be stored in a file located in vars/user_passwords.yml. This file contains entries for each account to create, associated to passwords hased with sha512
-      #These can be generated using:
-      #mkpasswd --method=sha-512
-      #Resulting line should look like this:
-      #username: '$6$LLzRkpZJM1b$CvFO*******************************************************************9uYUB0gHHgZQfc/'
+      #Passwords must be stored in the file located in vars/usres/user_passwords.yml. This file contains entries for each account to create, associated to passwords hosted with sha512
       include_vars:
         file: users/user_passwords.yml
         name: user_passwords
@@ -36,12 +33,12 @@
         password: "{{item.value}}"
         groups: ansible, docker, sudo   # Empty by default.
       with_dict: "{{ user_passwords }}"
-        #state: present
-        #shell: /bin/bash       # Defaults to /bin/bash
-        #system: no             # Defaults to no
-        #createhome: yes        # Defaults to yes
-        #home: /home/alex  # Defaults to /home/<username>
 
+
+#TODO: Add abitility to run an ansible role per user for personalisation
+#TODO: Exchange user ssh keys for transparent interhost ssh connexions
+#TODO: Update .ssh/config for each user to make ssh easy   (=> think a little bit about hostname changes etc... so that the .ssh/config files stay uptodate.
+#TODO: Add an administrative neutral account for bash tasks, general maintenance (juste change the pi account password??)
 
 
 #####################
@@ -56,13 +53,27 @@
       with_items:
         - git
         - vim-nox
+        - curl
+        - python-pip
+        - virtualenv
 #        - python3-pip
 
     - name: Remove dependencies that are no longer required
       become: yes
       apt:
         autoremove: yes
-#TODO: Install docker, bonjour
+#
+#TODO: Make docker install idempotent again
+    - name: Run docker installation convienice script
+      script: ./files/install_docker.sh
+
+    - name: Install docker-compose using pip
+      become: yes
+      pip:
+        name: docker-compose
+
+#TODO: Install Bonjour, Avahi or Zeroconf
+
 
 ################################
 #Creating directories structure#
@@ -81,6 +92,8 @@
         - { dest: '/docker/configs', group: 'docker', mode: '0775' }
         - { dest: '/ansible', group: 'ansible', mode: '0775' }
 
+#TODO: Clone dockerfiles and Docker-composes
+#TODO: Create the volumes needed for the different services (should use a different role!!)
 
 
 ############################
@@ -88,6 +101,16 @@
 ############################
 
 
-######################
-#Set hostnames an IPs#
-######################
+#######################
+#Set hostnames and IPs#
+#######################
+
+
+######################################
+#Install and config glusterfs volumes#
+######################################
+
+
+####################################
+#Launch appropriate docker services#   #TODO: Think a little bit if this is really the appropriate place for this
+####################################
