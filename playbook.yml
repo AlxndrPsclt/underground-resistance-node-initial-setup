@@ -3,14 +3,17 @@
 #:TODO: Create dynamic inventory using nmap to find RPIs on the network (using their mac adresses), and a redis/consul/etcd shared truth
 - hosts: rpis
   tasks:
-    - name: Test that my module works
-      github_repo: 
-      register: result
 
-    - debug: var=result
+#   - name: Test that my custom module works
+#     github_repo: 
+#     register: result
+
+#   - debug: var=result
+
 ##################
 #Users and groups#
 ##################
+    #TODO: Change the way of iterating to name variable something explicit like username instead of item.key
     - name: Ensure groups ansible and docker exist
       become: yes
       group:
@@ -22,17 +25,18 @@
   
     - name: Load passwords from a file
       #Passwords must be stored in the file located in vars/users/user_passwords.yml. This file contains entries for each account to create, associated to passwords hashed with sha512
-      #TODO: Encrypt the passwords with the ansible function deisgned for this purpose.
+      #TODO: Encrypt the passwords with the ansible function deisgned for this purpose. They should not show in the sell during ansible run
       include_vars:
         file: users/user_passwords.yml
         name: user_passwords
-
 
     - name: Create users
       become: yes
       user:
         name: "{{item.key}}"
         password: "{{item.value}}"
+        skeleton: "/etc/skel"
+        shell: /bin/bash
         groups: ansible, docker, sudo   # Empty by default.
       with_dict: "{{ user_passwords }}"
 
@@ -53,7 +57,7 @@
       with_dict: "{{ user_passwords }}"
       register: generated_keys
 
-    - debug: var=generated_keys
+#   - debug: var=generated_keys
 
     - name: Set authorized key, removing all the authorized keys already set
       authorized_key:
@@ -64,10 +68,31 @@
       become: yes
       with_dict: "{{ user_passwords }}"
 
+    #TODO: Ensure keys get properly switched when new ones are generated
+    - name: Ensure public keys are present
+      copy: 
+        src: 'vars/users/user_keys/{{item.key}}/id_rsa.pub'
+        dest: "/home/{{item.key}}/.ssh/id_rsa.pub"
+        owner: "{{ item.key }}"
+        group: "{{ item.key }}"
+        mode: 0600
+      become: yes
+      with_dict: "{{ user_passwords }}"
+
+    - name: Ensure private keys are present
+      copy: 
+        src: 'vars/users/user_keys/{{item.key}}/id_rsa'
+        dest: "/home/{{item.key}}/.ssh/id_rsa"
+        owner: "{{ item.key }}"
+        group: "{{ item.key }}"
+        mode: 0600
+      become: yes
+      with_dict: "{{ user_passwords }}"
+
 #   - meta: end_play    #Usefull for dev: ends the play right here
 
 #TODO: Add abitility to run an ansible role, or playbook per user for personalisation
-#TODO: Exchange user ssh keys for transparent interhost ssh connexions
+#TODO: Exchange user ssh keys for transparent interhost ssh connexions: the connexions between hosts are still not ssh
 #TODO: Update .ssh/config for each user to make ssh easy   (=> think a little bit about hostname changes etc... so that the .ssh/config vars stay uptodate.
 #TODO: Add an administrative neutral account for bash tasks, general maintenance (juste change the pi account password??)
 
@@ -75,60 +100,60 @@
 #####################
 #Installing software#
 #####################
-    - name: Update repositories cache and install usefull packages
-      become: yes
-      apt:
-        name: "{{ item }}"
-        update_cache: yes
-        cache_valid_time: 3600
-      with_items:
-        - git
-        - vim-nox
-        - curl
-        - python-pip
-        - virtualenv
-#        - python3-pip
-
-    - name: Remove dependencies that are no longer required
-      become: yes
-      apt:
-        autoremove: yes
-
-#TODO: Make docker install idempotent again
-    - name: Run docker installation convenience script
-      script: ./files/install_docker.sh
-      register: docker_script_result
-
-    - debug:
-        var: docker_script_result
-
-    - name: Install docker-compose using pip
-      become: yes
-      pip:
-        name: docker-compose
-
-#TODO: Install Bonjour, Avahi or Zeroconf
-
-
-################################
-#Creating directories structure#
-################################
-    - name: ansible create multiple directory example
-      become: yes
-      file:
-        path: "{{ item.dest }}"
-        group: "{{ item.group }}"
-        mode: "{{ item.mode }}"
-        state: directory
-      with_items:
-        - { dest: '/docker', group: 'root', mode: '0755' }
-        - { dest: '/docker/src', group: 'docker', mode: '0775' }
-        - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
-        - { dest: '/docker/configs', group: 'docker', mode: '0775' }
-        - { dest: '/ansible', group: 'ansible', mode: '0775' }
-
-#TODO: Clone dockerfiles and Docker-composes
-#TODO: Create the volumes needed for the different services (should use a different role!!)
+#    - name: Update repositories cache and install usefull packages
+#      become: yes
+#      apt:
+#        name: "{{ item }}"
+#        update_cache: yes
+#        cache_valid_time: 3600
+#      with_items:
+#        - git
+#        - vim-nox
+#        - curl
+#        - python-pip
+#        - virtualenv
+##        - python3-pip
+#
+#    - name: Remove dependencies that are no longer required
+#      become: yes
+#      apt:
+#        autoremove: yes
+#
+##TODO: Make docker install idempotent again
+#    - name: Run docker installation convenience script
+#      script: ./files/install_docker.sh
+#      register: docker_script_result
+#
+#    - debug:
+#        var: docker_script_result
+#
+#    - name: Install docker-compose using pip
+#      become: yes
+#      pip:
+#        name: docker-compose
+#
+##TODO: Install Bonjour, Avahi or Zeroconf
+#
+#
+#################################
+##Creating directories structure#
+#################################
+#    - name: ansible create multiple directory example
+#      become: yes
+#      file:
+#        path: "{{ item.dest }}"
+#        group: "{{ item.group }}"
+#        mode: "{{ item.mode }}"
+#        state: directory
+#      with_items:
+#        - { dest: '/docker', group: 'root', mode: '0755' }
+#        - { dest: '/docker/src', group: 'docker', mode: '0775' }
+#        - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
+#        - { dest: '/docker/configs', group: 'docker', mode: '0775' }
+#        - { dest: '/ansible', group: 'ansible', mode: '0775' }
+#
+##TODO: Clone dockerfiles and Docker-composes
+##TODO: Create the volumes needed for the different services (should use a different role!!)
 
 
 ############################
