@@ -4,6 +4,11 @@
 - hosts: rpis
   tasks:
 
+    - name: Tests ping connectivity
+      ping:
+
+    - meta: end_play    #Usefull for dev: ends the play right here
+
 #   - name: Test that my custom module works
 #     github_repo: 
 #     register: result
