@@ -2,16 +2,17 @@
 #:TODO: When the time comes, split this file in different roles
 #:TODO: Create dynamic inventory using nmap to find RPIs on the network (using their mac adresses), and a redis/consul/etcd shared truth
 - hosts: rpis
-  gather_facts: false
+  #gather_facts: false
+
   tasks:
-    - name: Wait 300 seconds for port 22 to become open and contain "OpenSSH"
-      local_action: wait_for
-      run_once: true
-      args:
-        port: 22
-        host: 'underground-resistance-001'
-        delay: 40
-      connection: local
+  #    - name: Wait 300 seconds for port 22 to become open and contain "OpenSSH"
+  #      local_action: wait_for
+  #      run_once: true
+  #      args:
+  #        port: 22
+  #        host: 'underground-resistance-001'
+  #        delay: 40
+  #      connection: local
 
     - name: Tests ping connectivity
       ping:
