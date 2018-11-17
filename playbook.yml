@@ -100,30 +100,36 @@
 #######################
 #Set hostnames and IPs#
 #######################
+    - name: Changes the hostname (without needing to restart)
+      hostname:
+        name: '{{ inventory_hostname }}'
+      become: yes
 
-    - name: Updates nodes name in hosts file:
+    - name: Updates nodes name in hosts file
       lineinfile:
         path: /etc/hosts
-        regexp: '^127\.0\.0\.1'
-        line: '127.0.0.1 {{ node_hostname }}'
+        regexp: '^127\.0\.1\.1'
+        line: '127.0.1.1 {{ inventory_hostname }}'
         owner: root
         group: root
         mode: 0644
       become: yes
 
-    - name: Updates nodes name in hostname file:
+    - name: Updates nodes name in hostname file
       lineinfile:
         path: /etc/hostname
         regexp: '^.*'
-        line: '{{ node_hostname }}'
+        line: '{{ inventory_hostname }}'
         owner: root
         group: root
         mode: 0644
       become: yes
 
-    - name: Changes the hostname (without needing to restart)
-      hostname:
-        name: {{ node_hostname }}
+    - name: Restart service avahi-daemon, to take hostname change into account
+      service:
+        name: avahi-daemon
+        state: restarted
+      become: yes
 
     - meta: end_play    #Usefull for dev: ends the play right here
 
