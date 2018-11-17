@@ -141,7 +141,6 @@
         state: restarted
       become: yes
 
-    - meta: end_play    #Usefull for dev: ends the play right here
 
 #####################
 #Installing software#
@@ -203,7 +202,11 @@
 ############################
 #Syncronise time on servers#
 ############################
+    - name: Set timezone to Europe/Paris
+      timezone:
+        name: Europe/Paris
 
+    - meta: end_play    #Usefull for dev: ends the play right here
 
 ######################################
 #Install and config glusterfs volumes#
