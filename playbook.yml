@@ -26,7 +26,6 @@
 #  
 #    - name: Load passwords from a file
 #      #Passwords must be stored in the file located in vars/users/user_passwords.yml. This file contains entries for each account to create, associated to passwords hashed with sha512
-#      #TODO: Encrypt the passwords with the ansible function deisgned for this purpose. They should not show in the sell during ansible run
 #      include_vars:
 #        file: users/user_passwords.yml
 #        name: user_passwords
@@ -89,12 +88,23 @@
 #        mode: 0600
 #      become: yes
 #      with_dict: "{{ user_passwords }}"
+#
+    - name: Load pi password from a file
+      #Passwords must be stored in the file located in vars/users/user_passwords.yml. This file contains entries for each account to create, associated to passwords hashed with sha512
+      include_vars:
+        file: users/pi_passwords.yml
+        name: pi_passwords
 
+    - name: Change pi password
+      become: yes
+      user:
+        name: pi
+        password: "{{item.value}}"
+      with_dict: "{{ pi_passwords }}"
 
 #TODO: Add abitility to run an ansible role, or playbook per user for personalisation
 #TODO: Exchange user ssh keys for transparent interhost ssh connexions: the connexions between hosts are still not ssh
 #TODO: Update .ssh/config for each user to make ssh easy   (=> think a little bit about hostname changes etc... so that the .ssh/config vars stay uptodate.
-#TODO: Add an administrative neutral account for bash tasks, general maintenance (juste change the pi account password??)
 #TODO: Change inventory to yml
 
 #######################
@@ -167,8 +177,6 @@
 #      become: yes
 #      pip:
 #        name: docker-compose
-#
-##TODO: Install Bonjour, Avahi or Zeroconf
 #
 #
 #################################
