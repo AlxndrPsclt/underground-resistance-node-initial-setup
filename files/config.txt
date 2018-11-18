@@ -1,0 +1,4 @@
+core_freq=500 # GPU Frequency 
+arm_freq=1300 # CPU Frequency 
+over_voltage=4 #Electric power sent to CPU / GPU (4 = 1.3V) 
+disable_splash=1 # Disables the display of the electric alert screen
