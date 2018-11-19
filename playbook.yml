@@ -185,7 +185,12 @@
 #        - { dest: '/docker/configs', group: 'docker', mode: '0775' }
 #        - { dest: '/ansible', group: 'ansible', mode: '0775' }
 
-##TODO: Clone dockerfiles and Docker-composes
+#    ##TODO: Clone dockerfiles and Docker-composes: complete template
+#    - name: Clone docker projects to run cluster services
+#      git:
+#        repo: ssh://git@github.com/mylogin/hello.git
+#        dest: /docker/
+
 ##TODO: Create the volumes needed for the different services (should use a different role!!)
 
 
