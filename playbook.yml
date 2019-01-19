@@ -2,9 +2,13 @@
 #:TODO: When the time comes, split this file in different roles
 #:TODO: Create dynamic inventory using nmap to find RPIs on the network (using their mac adresses), and a redis/consul/etcd shared truth
 - hosts: rpis
+  gather_facts: no
   #gather_facts: false
 
   tasks:
+    - name: Wait 600 seconds for target connection to become reachable/usable
+      wait_for_connection:
+    - setup:
 #   - name: Test that my custom module works
 #     github_repo: 
 #     register: result
@@ -122,11 +126,6 @@
         owner: root
         group: root
         mode: 0644
-
-    - name: Changes the hostname (without needing to restart)
-      hostname:
-        name: {{ node_hostname }}
-      become: yes
 
     - name: Restart service avahi-daemon, to take hostname change into account
       become: yes
