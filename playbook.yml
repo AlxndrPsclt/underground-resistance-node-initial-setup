@@ -124,6 +124,7 @@
     - name: Changes the hostname (without needing to restart)
       hostname:
         name: {{ node_hostname }}
+      become: yes
 
     - meta: end_play    #Usefull for dev: ends the play right here
 
@@ -162,7 +163,6 @@
 #      pip:
 #        name: docker-compose
 #
-##TODO: Install Bonjour, Avahi or Zeroconf
 #
 #
 #################################
