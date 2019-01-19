@@ -123,11 +123,6 @@
         group: root
         mode: 0644
 
-    - name: Changes the hostname (without needing to restart)
-      hostname:
-        name: {{ node_hostname }}
-      become: yes
-
     - name: Restart service avahi-daemon, to take hostname change into account
       become: yes
       service:
