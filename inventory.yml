@@ -1,0 +1,11 @@
+all:
+  children:
+    rpis:
+      hosts:
+        underground-resistance-001:
+        underground-resistance-002:
+      vars:
+        ansible_connection: ssh
+        ansible_user: pi
+        ansible_ssh_pass: raspberry
+        ansible_port: 2222

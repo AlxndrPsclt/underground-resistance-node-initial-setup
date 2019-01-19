@@ -26,7 +26,6 @@
 #  
 #    - name: Load passwords from a file
 #      #Passwords must be stored in the file located in vars/users/user_passwords.yml. This file contains entries for each account to create, associated to passwords hashed with sha512
-#      #TODO: Encrypt the passwords with the ansible function deisgned for this purpose. They should not show in the sell during ansible run
 #      include_vars:
 #        file: users/user_passwords.yml
 #        name: user_passwords
@@ -94,39 +93,47 @@
 #TODO: Add abitility to run an ansible role, or playbook per user for personalisation
 #TODO: Exchange user ssh keys for transparent interhost ssh connexions: the connexions between hosts are still not ssh
 #TODO: Update .ssh/config for each user to make ssh easy   (=> think a little bit about hostname changes etc... so that the .ssh/config vars stay uptodate.
-#TODO: Add an administrative neutral account for bash tasks, general maintenance (juste change the pi account password??)
 #TODO: Change inventory to yml
 
 #######################
 #Set hostnames and IPs#
 #######################
+    - name: Changes the hostname (without needing to restart)
+      become: yes
+      hostname:
+        name: '{{ inventory_hostname }}'
 
-    - name: Updates nodes name in hosts file:
+    - name: Updates nodes name in hosts file
+      become: yes
       lineinfile:
         path: /etc/hosts
-        regexp: '^127\.0\.0\.1'
-        line: '127.0.0.1 {{ node_hostname }}'
+        regexp: '^127\.0\.1\.1'
+        line: '127.0.1.1 {{ inventory_hostname }}'
         owner: root
         group: root
         mode: 0644
-      become: yes
 
-    - name: Updates nodes name in hostname file:
+    - name: Updates nodes name in hostname file
+      become: yes
       lineinfile:
         path: /etc/hostname
         regexp: '^.*'
-        line: '{{ node_hostname }}'
+        line: '{{ inventory_hostname }}'
         owner: root
         group: root
         mode: 0644
-      become: yes
 
     - name: Changes the hostname (without needing to restart)
       hostname:
         name: {{ node_hostname }}
       become: yes
 
-    - meta: end_play    #Usefull for dev: ends the play right here
+    - name: Restart service avahi-daemon, to take hostname change into account
+      become: yes
+      service:
+        name: avahi-daemon
+        state: restarted
+
 
 #####################
 #Installing software#
@@ -134,22 +141,24 @@
 #    - name: Update repositories cache and install usefull packages
 #      become: yes
 #      apt:
-#        name: "{{ item }}"
+#        name: ['git', 'vim-nox', 'curl', 'python-pip']
 #        update_cache: yes
 #        cache_valid_time: 3600
-#      with_items:
-#        - git
-#        - vim-nox
-#        - curl
-#        - python-pip
-#        - virtualenv
 ##        - python3-pip
+#
+#    - name: Install virtualenv & cie using pip
+#      become: yes
+#      pip:
+#        name: "{{ item }}"
+#      with_items:
+#        - virtualenv
+#        - virtualenvwrapper
 #
 #    - name: Remove dependencies that are no longer required
 #      become: yes
 #      apt:
 #        autoremove: yes
-#
+
 ##TODO: Make docker install idempotent again
 #    - name: Run docker installation convenience script
 #      script: ./files/install_docker.sh
@@ -163,12 +172,15 @@
 #      pip:
 #        name: docker-compose
 #
+<<<<<<< HEAD
 #
+=======
+>>>>>>> 7ab6c1686af2c62e0dbb84b3c31b93962e87f90f
 #
 #################################
 ##Creating directories structure#
 #################################
-#    - name: ansible create multiple directory example
+#    - name: Create multiple directory example
 #      become: yes
 #      file:
 #        path: "{{ item.dest }}"
@@ -181,15 +193,38 @@
 #        - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
 #        - { dest: '/docker/configs', group: 'docker', mode: '0775' }
 #        - { dest: '/ansible', group: 'ansible', mode: '0775' }
-#
-##TODO: Clone dockerfiles and Docker-composes
+
+#    ##TODO: Clone dockerfiles and Docker-composes: complete template
+#    - name: Clone docker projects to run cluster services
+#      git:
+#        repo: ssh://git@github.com/mylogin/hello.git
+#        dest: /docker/
+
 ##TODO: Create the volumes needed for the different services (should use a different role!!)
 
 
 ############################
 #Syncronise time on servers#
 ############################
+#    - name: Set timezone to Europe/Paris
+#      timezone:
+#        name: Europe/Paris
+#
 
+    - name: Creates a link to update timezone
+      become: yes
+      file:
+        src: /usr/share/zoneinfo/Europe/Paris
+        dest: /etc/localtime
+        state: link
+
+    - name: Restart service cron, to take hostname change into account
+      become: yes
+      service:
+        name: cron
+        state: restarted
+
+    - meta: end_play    #Usefull for dev: ends the play right here
 
 ######################################
 #Install and config glusterfs volumes#
@@ -198,6 +233,11 @@
 ####################
 #Overclock the RPIs#
 ####################
+#    - name: Copy a config.txt file that allows for overclocking
+#      become: yes
+#      copy:
+#        src: ./files/config.txt
+#        dest: /boot/config.txt
 
 ####################
 #Init or join swarm#
@@ -207,7 +247,22 @@
 #Launch appropriate docker services#   #TODO: Think a little bit if this is really the appropriate place for this
 ####################################
 
+###################################
+#Changes pi passwords for security#   #TODO: Think a little bit if this is really the appropriate place for this
+####################################
 
+    - name: Load pi password from a file
+      #Passwords must be stored in the file located in vars/users/user_passwords.yml. This file contains entries for each account to create, associated to passwords hashed with sha512
+      include_vars:
+        file: users/pi_password.yml
+        name: pi_password
+
+    - name: Change pi password
+      become: yes
+      user:
+        name: pi
+        password: "{{item.value}}"
+      with_dict: "{{ pi_password }}"
 
 #    If needed:
 #    - debug:
