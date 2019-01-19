@@ -172,10 +172,6 @@
 #      pip:
 #        name: docker-compose
 #
-<<<<<<< HEAD
-#
-=======
->>>>>>> 7ab6c1686af2c62e0dbb84b3c31b93962e87f90f
 #
 #################################
 ##Creating directories structure#
