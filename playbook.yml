@@ -12,7 +12,6 @@
 ##################
 #Users and groups#
 ##################
-   #TODO: Change the way of iterating to name variable something explicit like username instead of item.key
     - name: Ensure groups ansible and docker exist
       become: yes
       group:
@@ -48,10 +47,10 @@
 
     - name: Generate keys on host, unless they already exist
       #TODO: Add a job that removes the keys at random moments, just to refresh and keep access secure
-      local_action: command ssh-keygen -b 2048 -N '' -f vars/users/user_keys/{{item.key}}/id_rsa
+      local_action: command ssh-ecdsa -b 512 -N '' -f vars/users/user_keys/{{item.key}}/id_ecdsa
       run_once: true
       args:
-        creates: "vars/users/user_keys/{{item.key}}/id_rsa"
+        creates: "vars/users/user_keys/{{item.key}}/id_ecdsa"
       with_dict: "{{ user_passwords }}"
       register: generated_keys
 
@@ -60,7 +59,7 @@
     - name: Set authorized key, removing all the authorized keys already set
       authorized_key:
         user: "{{item.key}}"
-        key: "{{ lookup('file', 'vars/users/user_keys/{{item.key}}/id_rsa.pub') }}"
+        key: "{{ lookup('file', 'vars/users/user_keys/{{item.key}}/id_ecdsa.pub') }}"
         state: present
         exclusive: True
       become: yes
@@ -69,8 +68,8 @@
     #TODO: Ensure keys get properly switched when new ones are generated
     - name: Ensure public keys are present
       copy: 
-        src: 'vars/users/user_keys/{{item.key}}/id_rsa.pub'
-        dest: "/home/{{item.key}}/.ssh/id_rsa.pub"
+        src: 'vars/users/user_keys/{{item.key}}/id_ecdsa.pub'
+        dest: "/home/{{item.key}}/.ssh/id_ecdsa.pub"
         owner: "{{ item.key }}"
         group: "{{ item.key }}"
         mode: 0600
@@ -79,8 +78,8 @@
 
     - name: Ensure private keys are present
       copy: 
-        src: 'vars/users/user_keys/{{item.key}}/id_rsa'
-        dest: "/home/{{item.key}}/.ssh/id_rsa"
+        src: 'vars/users/user_keys/{{item.key}}/id_ecdsa'
+        dest: "/home/{{item.key}}/.ssh/id_ecdsa"
         owner: "{{ item.key }}"
         group: "{{ item.key }}"
         mode: 0600
