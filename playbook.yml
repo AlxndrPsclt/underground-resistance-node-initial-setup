@@ -1,7 +1,7 @@
 ---
 #TODO: When the time comes, split this file in different roles
 #TODO: Create dynamic inventory using nmap to find RPIs on the network (using their mac adresses), and a redis/consul/etcd shared truth
-- hosts: rpis
+- hosts: cleanrpi
   gather_facts: no
 
   tasks:
@@ -20,7 +20,7 @@
       with_items:
         - ansible
         - docker
- 
+
     - name: Load passwords from a file
       #Passwords must be stored in the file located in vars/users/user_passwords.yml. This file contains entries for each account to create, associated to passwords hashed with sha512
       include_vars:
@@ -37,38 +37,101 @@
         groups: ansible, docker, sudo   # Empty by default.
       with_dict: "{{ user_passwords }}"
 
-    - name: Generate folders for keys on control machine
-      local_action: file
-      run_once: true
-      args:
-        path: "vars/users/user_keys/{{item.key}}"
-        state: directory
-      with_dict: "{{ user_passwords }}"
-
-    - name: Generate keys on host, unless they already exist
-      #TODO: Add a job that removes the keys at random moments, just to refresh and keep access secure
-      local_action: command ssh-ecdsa -b 512 -N '' -f vars/users/user_keys/{{item.key}}/id_ecdsa
-      run_once: true
-      args:
-        creates: "vars/users/user_keys/{{item.key}}/id_ecdsa"
-      with_dict: "{{ user_passwords }}"
-      register: generated_keys
-
-#   - debug: var=generated_keys
-
+      #    - name: Create ssh directory
+      #      file:
+      #        path: "{{ HOME }}/.ssh"
+      #        owner: "alex"
+      #        group: "alex"
+      #        mode: "0755"
+      #        state: directory
+      #      become: yes
+          #- { dest: '/ansible', group: 'ansible', mode: '0775' }
+          #
     - name: Set authorized key, removing all the authorized keys already set
       authorized_key:
         user: "{{item.key}}"
-        key: "{{ lookup('file', 'vars/users/user_keys/{{item.key}}/id_ecdsa.pub') }}"
+        key: "{{ lookup('file', '{{ HOME }}/.ssh/id_ecdsa.pub') }}"
         state: present
         exclusive: True
       become: yes
       with_dict: "{{ user_passwords }}"
 
+#######################
+#Set hostnames and IPs#
+#######################
+    - name: Changes the hostname (without needing to restart)
+      become: yes
+      hostname:
+        name: '{{ DESTINATION_NAME }}'
+
+    - name: Updates nodes name in hosts file
+      become: yes
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1'
+        line: '127.0.1.1 {{ DESTINATION_NAME }}'
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Updates nodes name in hostname file
+      become: yes
+      lineinfile:
+        path: /etc/hostname
+        regexp: '^.*'
+        line: '{{ DESTINATION_NAME }}'
+        owner: root
+        group: root
+        mode: 0644
+
+
+    - name: Reboot node and stop polling.
+      shell: reboot
+      become: yes
+      async: 10 # Do not care for 10 sec
+      poll: 0 # Fire & Forget
+
+- hosts: cluster
+  gather_facts: no
+
+  tasks:
+    - name: Wait 120 seconds for target connection to become reachable/usable
+      wait_for_connection:
+    - setup:
+
+
+
+    - name: Update repositories cache and install usefull packages
+      become: yes
+      apt:
+        name: ['git', 'vim-nox', 'curl', 'python-pip', 'git-crypt', 'gpg']
+        update_cache: yes
+        cache_valid_time: 3600
+
+
+  #        - python3-pip
+      #    - name: Generate folders for keys on control machine
+      #      local_action: file
+      #      run_once: true
+      #      args:
+      #        path: "vars/users/user_keys/{{item.key}}"
+      #        state: directory
+      #      with_dict: "{{ user_passwords }}"
+      #
+    - name: Copy gpg key from local to host, needed to decrypt pass files and ssh key
+      copy:
+        src: /home/alex/.gnupg/private-keys-v1.d/591C92020CF74624D921173BA6B96F0B0A5E5D99.key
+        dest: /home/alex/.gnupg/private-keys-v1.d/
+        owner: alex
+        group: alex
+        mode: '0600'
+
+    - meta: end_play    #Usefull for dev: ends the play right here
+
     #TODO: Ensure keys get properly switched when new ones are generated
     - name: Ensure public keys are present
-      copy: 
-        src: 'vars/users/user_keys/{{item.key}}/id_ecdsa.pub'
+      copy:
+        src: '{{ HOME }}/.ssh/id_ecdsa.pub'
         dest: "/home/{{item.key}}/.ssh/id_ecdsa.pub"
         owner: "{{ item.key }}"
         group: "{{ item.key }}"
@@ -77,7 +140,7 @@
       with_dict: "{{ user_passwords }}"
 
     - name: Ensure private keys are present
-      copy: 
+      copy:
         src: 'vars/users/user_keys/{{item.key}}/id_ecdsa'
         dest: "/home/{{item.key}}/.ssh/id_ecdsa"
         owner: "{{ item.key }}"
@@ -90,35 +153,6 @@
 #TODO: Add abitility to run an ansible role, or playbook per user for personalisation
 #TODO: Exchange user ssh keys for transparent interhost ssh connexions: the connexions between hosts are still not ssh
 #TODO: Update .ssh/config for each user to make ssh easy   (=> think a little bit about hostname changes etc... so that the .ssh/config vars stay uptodate.
-#TODO: Change inventory to yml
-
-#######################
-#Set hostnames and IPs#
-#######################
-    - name: Changes the hostname (without needing to restart)
-      become: yes
-      hostname:
-        name: '{{ inventory_hostname }}'
-
-    - name: Updates nodes name in hosts file
-      become: yes
-      lineinfile:
-        path: /etc/hosts
-        regexp: '^127\.0\.1\.1'
-        line: '127.0.1.1 {{ inventory_hostname }}'
-        owner: root
-        group: root
-        mode: 0644
-
-    - name: Updates nodes name in hostname file
-      become: yes
-      lineinfile:
-        path: /etc/hostname
-        regexp: '^.*'
-        line: '{{ inventory_hostname }}'
-        owner: root
-        group: root
-        mode: 0644
 
     - name: Restart service avahi-daemon, to take hostname change into account
       become: yes
@@ -177,7 +211,7 @@
         - { dest: '/docker/src', group: 'docker', mode: '0775' }
         - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
         - { dest: '/docker/configs', group: 'docker', mode: '0775' }
-        - { dest: '/ansible', group: 'ansible', mode: '0775' }
+          #- { dest: '/ansible', group: 'ansible', mode: '0775' }
 
     ##TODO: Clone dockerfiles and Docker-composes: complete template
     # - name: Clone docker projects to run cluster services

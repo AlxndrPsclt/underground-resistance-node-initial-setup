@@ -1,11 +1,22 @@
-all:
-  children:
-    rpis:
-      hosts:
-        newraspberrypi:
-        underground-resistance-001:
-      vars:
-        ansible_connection: ssh
-        ansible_user: pi
-        ansible_ssh_pass: raspberry
-        ansible_port: 22
+---
+cleanrpi:
+  hosts:
+    raspberrypi.local:
+  vars:
+    ansible_connection: ssh
+    ansible_user: pi
+    ansible_ssh_pass: raspberry
+    ansible_port: 22
+    HOME: "/home/alex"
+    CONFIG_PERSO: "{{ HOME }}/.config/perso"
+    DESTINATION_NAME: "underground-resistance-001"
+
+cluster:
+  hosts:
+    underground-resistance-001.local:
+  vars:
+    ansible_connection: ssh
+    ansible_user: alex
+    ansible_port: 22
+    HOME: "/home/alex"
+    CONFIG_PERSO: "{{ HOME }}/.config/perso"
