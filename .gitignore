@@ -1,6 +1,7 @@
 *.swp
 playbook.retry
 brouillon.md
+vault-password-file
 
 vars/users/user_keys/
 !vars/users/user_keys/user1.example.pub

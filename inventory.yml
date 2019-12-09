@@ -6,6 +6,7 @@ cleanrpi:
     ansible_connection: ssh
     ansible_user: pi
     ansible_ssh_pass: raspberry
+    ansible_become_pass: raspberry
     ansible_port: 22
     HOME: "/home/alex"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
@@ -17,6 +18,7 @@ cluster:
   vars:
     ansible_connection: ssh
     ansible_user: alex
+    ansible_become_pass: alex
     ansible_port: 22
     HOME: "/home/alex"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"

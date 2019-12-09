@@ -1,2 +1,84 @@
 ---
 # tasks file for setup
+- name: Wait 120 seconds for target connection to become reachable/usable
+  wait_for_connection:
+- setup:
+
+##################
+#Users and groups#
+##################
+- name: Ensure groups ansible and docker exist
+  become: yes
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ansible
+    - docker
+
+- name: Load passwords from a file
+  #Passwords must be stored in the file located in vars/users/user_passwords.yml. This file contains entries for each account to create, associated to passwords hashed with sha512
+  include_vars:
+    file: users/user_passwords.yml
+    name: user_passwords
+
+- name: Create users
+  become: yes
+  user:
+    name: "{{item.key}}"
+    password: "{{item.value}}"
+    skeleton: "/etc/skel"
+    shell: /bin/bash
+    groups: ansible, docker, sudo   # Empty by default.
+  with_dict: "{{ user_passwords }}"
+
+- name: Set authorized key, removing all the authorized keys already set
+  authorized_key:
+    user: "{{item.key}}"
+    key: "{{ lookup('file', '{{ HOME }}/.ssh/id_ecdsa.pub') }}"
+    state: present
+    exclusive: True
+  become: yes
+  with_dict: "{{ user_passwords }}"
+
+#######################
+#Set hostnames and IPs#
+#######################
+- name: Changes the hostname (without needing to restart)
+  become: yes
+  hostname:
+    name: '{{ DESTINATION_NAME }}'
+
+- name: Updates nodes name in hosts file
+  become: yes
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1'
+    line: '127.0.1.1 {{ DESTINATION_NAME }}'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Updates nodes name in hostname file
+  become: yes
+  lineinfile:
+    path: /etc/hostname
+    regexp: '^.*'
+    line: '{{ DESTINATION_NAME }}'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Creates a link to update timezone
+  become: yes
+  file:
+    src: /usr/share/zoneinfo/Europe/Paris
+  dest: /etc/localtime
+  state: link
+
+- name: Reboot node and stop polling.
+  shell: reboot
+  become: yes
+  async: 10 # Do not care for 10 sec
+  poll: 0 # Fire & Forget
+

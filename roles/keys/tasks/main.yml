@@ -1,0 +1,75 @@
+---
+# tasks file for keys
+- name: Wait 120 seconds for target connection to become reachable/usable
+  wait_for_connection:
+
+- name: Update repositories cache and install usefull packages
+  become: yes
+  apt:
+    name: ['gpg']
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Copy gpg key from local to host, needed to decrypt pass files
+  copy:
+    src: /home/alex/.gpg
+    dest: "{{ HOME }}"
+    owner: alex
+    group: alex
+    mode: '0744'
+
+- name: import public key
+  shell: gpg --import {{ HOME }}/.gpg/basekey.gpg
+
+- name: Load masterpass from an encrypted file
+  include_vars:
+    file: masterpass/masterpass.yml
+  name: masterpass
+
+- name: import private key
+  shell: gpg --batch --allow-secret-key-import --passphrase "{{ masterpass }}" --import {{ HOME }}/.gpg/basekey_sec.gpg
+
+- name: Copy ssh deploy key from local to host, needed to clone configs
+  copy:
+    src: /home/alex/.ssh/keys
+    dest: "{{ HOME }}/.ssh/"
+    owner: alex
+    group: alex
+    mode: '0755'
+
+- name: Adjust ssh private keys permissions
+  file:
+    path: /home/alex/.ssh/keys/id_ecdsa.deploy.password-store.github
+    owner: alex
+    group: alex
+    mode: '0600'
+
+    #- name: Adjust ssh public keys permissions
+    #  file:
+    #    path: /home/alex/.ssh/keys/id_ecdsa.deploy.password-store.github
+    #    owner: alex
+    #    group: alex
+    #    mode: '0600'
+
+
+
+
+- name: Make sure the known hosts file exists
+  file:
+    path: "{{ ssh_known_hosts_file }}"
+    state: touch
+    owner: alex
+    group: alex
+    mode: '0644'
+
+- name: Check host name availability
+  shell: "ssh-keygen -f {{ ssh_known_hosts_file }} -F {{ item }}"
+  loop: "{{ ssh_known_hosts }}"
+  register: ssh_known_host_results
+  ignore_errors: yes
+
+- name: Scan the public key
+  shell: "{{ ssh_known_hosts_command}} {{ item.item }} >> {{ ssh_known_hosts_file }}"
+  with_items: "{{ ssh_known_host_results.results }}"
+  when: item.stdout == ""
+
