@@ -42,7 +42,7 @@
   git:
     repo: 'git@gitlab.com:AlxndrPsclt/password-store.git'
     dest: "{{ HOME }}/.password-store"
-    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.password-store.github"
+    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.password-store.gitlab"
 
 
 
@@ -50,7 +50,7 @@
 - name: Update repositories cache and install some almost necessary tools
   become: yes
   apt:
-    name: ['vim-nox', 'curl', 'python-pip', 'silversearcher-ag', 'fzf', 'mlocate', 'vifm']
+    name: ['vim-nox', 'curl', 'python-pip', 'silversearcher-ag', 'fzf', 'mlocate', 'vifm', 'tmux']
     update_cache: yes
     cache_valid_time: 3600
 
@@ -59,11 +59,13 @@
   git:
     repo: 'https://github.com/AlxndrPsclt/dotvim.git'
     dest: "{{ HOME }}/.vim"
+    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github"
 
 - name: Clone Vundle for vim plugins
   git:
     repo: 'https://github.com/VundleVim/Vundle.vim.git'
     dest: "{{ HOME }}/.vim/bundle/Vundle.vim"
+    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github"
 
 
 
@@ -77,25 +79,61 @@
   apt:
     autoremove: yes
 
-- meta: end_play    #Usefull for dev: ends the play right here
 
-    #TODO: Make docker install idempotent again
-    # - name: Run docker installation convenience script
-    #   script: ./files/install_docker.sh
-    #   register: docker_script_result
+#################
+##Install docker#
+#################
 
-    # - debug:
-    #     var: docker_script_result
+- name: update repositories cache and install some tools needed for docker install
+  become: yes
+  apt:
+    name: [ 'apt-transport-https', 'ca-certificates', 'curl', 'gnupg2', 'software-properties-common']
+    update_cache: yes
+    cache_valid_time: 3600
 
-    # - name: Install docker-compose using pip
-    #   become: yes
-    #   pip:
-    #     name: docker-compose
+- name: Add docker Apt signing key, will not download if present
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+  become: yes
+
+- name: add docker apt repository
+  apt_repository:
+    repo: 'deb [arch=armhf] https://download.docker.com/linux/raspbian      buster stable'  #TODO: Add automatic filling of buster stable instead of incoding it{
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: update repositories cache and install some tools needed for docker install
+  become: yes
+  apt:
+    name: [ 'docker-ce', 'cgroupfs-mount' ]
+    install_recommends: no
+
+- name: enable service docker
+  systemd:
+    name: docker
+    #scope: user
+    state: started
+    enabled: yes
+    masked: no
 
 
-    #################################
-    ##Creating directories structure#
-    #################################
+- name: Update repositories cache and install tools necessary for docker-compose
+  become: yes
+  apt:
+    name: [ 'libffi-dev', 'python-backports.ssl-match-hostname' ]
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install virtualenv & cie using pip
+  become: yes
+  pip:
+    name: ['docker-compose']
+
+#################################
+##Creating directories structure#
+#################################
 - name: Create multiple directory example
   become: yes
   file:
@@ -109,6 +147,8 @@
     - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
     - { dest: '/docker/configs', group: 'docker', mode: '0775' }
       #- { dest: '/ansible', group: 'ansible', mode: '0775' }
+
+- meta: end_play    #Usefull for dev: ends the play right here
 
       ##TODO: Clone dockerfiles and Docker-composes: complete template
       # - name: Clone docker projects to run cluster services

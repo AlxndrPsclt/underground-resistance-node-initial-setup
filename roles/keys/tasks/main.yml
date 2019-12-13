@@ -39,7 +39,14 @@
 
 - name: Adjust ssh private keys permissions
   file:
-    path: /home/alex/.ssh/keys/id_ecdsa.deploy.password-store.github
+    path: /home/alex/.ssh/keys/id_ecdsa.deploy.password-store.gitlab
+    owner: alex
+    group: alex
+    mode: '0600'
+
+- name: Adjust ssh private keys permissions
+  file:
+    path: /home/alex/.ssh/keys/id_ecdsa.deploy.github
     owner: alex
     group: alex
     mode: '0600'
