@@ -5,3 +5,11 @@ ssh_known_hosts_file: "{{ HOME }}/.ssh/known_hosts"
 ssh_known_hosts:
   - gitlab.com
   - github.com
+
+ssh_deploy_private_keys :
+  - id_ecdsa.deploy.github
+  - id_ecdsa.deploy.password-store.gitlab
+
+ssh_deploy_public_keys :
+  - id_ecdsa.deploy.github.pub
+  - id_ecdsa.deploy.password-store.gitlab.pub

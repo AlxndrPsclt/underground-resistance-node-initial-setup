@@ -42,7 +42,7 @@
   git:
     repo: 'git@gitlab.com:AlxndrPsclt/password-store.git'
     dest: "{{ HOME }}/.password-store"
-    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.password-store.gitlab"
+    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.password-store.gitlab.priv"
 
 
 
@@ -57,16 +57,42 @@
 
 - name: Clone personal vimconfig
   git:
-    repo: 'https://github.com/AlxndrPsclt/dotvim.git'
+    repo: 'git@github.com:AlxndrPsclt/dotvim.git'
     dest: "{{ HOME }}/.vim"
-    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github"
+    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github.priv"
+
 
 - name: Clone Vundle for vim plugins
   git:
-    repo: 'https://github.com/VundleVim/Vundle.vim.git'
+    repo: 'git@github.com:VundleVim/Vundle.vim.git'
     dest: "{{ HOME }}/.vim/bundle/Vundle.vim"
-    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github"
+    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github.priv"
 
+- name: Clone personal bash config
+  git:
+    repo: 'git@github.com:AlxndrPsclt/configPerso.git'
+    dest: "{{ HOME }}/.config/perso"
+    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github.priv"
+
+- name: Register existence of workstation config links
+  stat:
+    path: "{{ item.dest }}"
+  loop: "{{ links_to_create }}"
+  register: link_register
+
+- name: Remove config file if some default exists (not links)
+  file:
+    path: "{{ item.stat.path }}"
+    state: absent
+  loop: "{{ link_register.results }}"
+  when: item.stat.islnk is defined and item.stat.islnk == False
+
+- name: Create symbolic link for workstation config tools
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  loop: "{{ links_to_create }}"
 
 
 - name: Install virtualenv & cie using pip
@@ -134,7 +160,7 @@
 #################################
 ##Creating directories structure#
 #################################
-- name: Create multiple directory example
+- name: Create multiple docker directories
   become: yes
   file:
     path: "{{ item.dest }}"
