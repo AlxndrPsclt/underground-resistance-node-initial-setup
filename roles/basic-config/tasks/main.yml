@@ -13,7 +13,7 @@
   become: yes
   apt:
     #name: ['git', 'vim-nox', 'curl', 'python-pip', 'git-crypt', 'gpg', 'pass']
-    name: ['git', 'pass']
+    name: ['git', 'pass', 'git-crypt']
     update_cache: yes
     cache_valid_time: 3600
 
@@ -42,7 +42,7 @@
   git:
     repo: 'git@gitlab.com:AlxndrPsclt/password-store.git'
     dest: "{{ HOME }}/.password-store"
-    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.password-store.gitlab.priv"
+    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.gitlab.priv"
 
 
 - name: Update repositories cache and install some almost necessary tools
@@ -57,20 +57,20 @@
   git:
     repo: 'git@github.com:AlxndrPsclt/dotvim.git'
     dest: "{{ HOME }}/.vim"
-    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github.priv"
+    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.github.priv"
 
 
 - name: Clone Vundle for vim plugins
   git:
     repo: 'git@github.com:VundleVim/Vundle.vim.git'
     dest: "{{ HOME }}/.vim/bundle/Vundle.vim"
-    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github.priv"
+    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.github.priv"
 
 - name: Clone personal bash config
   git:
     repo: 'git@github.com:AlxndrPsclt/configPerso.git'
     dest: "{{ HOME }}/.config/perso"
-    key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.github.priv"
+    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.github.priv"
 
 - name: Register existence of workstation config links
   stat:
@@ -167,7 +167,7 @@
     state: directory
   with_items:
     - { dest: '/docker', group: 'root', mode: '0755' }
-    - { dest: '/docker/src', group: 'docker', mode: '0775' }
+    - { dest: '/docker/deploys', group: 'docker', mode: '0775' }
     - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
     - { dest: '/docker/configs', group: 'docker', mode: '0775' }
       #- { dest: '/ansible', group: 'ansible', mode: '0775' }

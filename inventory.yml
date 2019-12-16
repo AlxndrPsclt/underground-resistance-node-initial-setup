@@ -19,7 +19,7 @@ cluster:
   vars:
     ansible_connection: ssh
     ansible_user: alex
-    ansible_become_pass: alex
+    ansible_become_pass: '{{ passwords_main_user }}'
     ansible_port: 22
     HOME: "/home/alex"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
