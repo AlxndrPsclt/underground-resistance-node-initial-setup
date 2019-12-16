@@ -99,3 +99,4 @@
   with_items: "{{ ssh_known_host_results.results }}"
   when: item.stdout == ""
 
+- meta: end_play    #Usefull for dev: ends the play right here

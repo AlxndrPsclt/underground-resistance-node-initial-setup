@@ -45,8 +45,6 @@
     key_file: "{{ HOME }}/.ssh/keys/id_ecdsa.deploy.password-store.gitlab.priv"
 
 
-
-
 - name: Update repositories cache and install some almost necessary tools
   become: yes
   apt:
@@ -173,7 +171,7 @@
     - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
     - { dest: '/docker/configs', group: 'docker', mode: '0775' }
       #- { dest: '/ansible', group: 'ansible', mode: '0775' }
-
+      #
 - meta: end_play    #Usefull for dev: ends the play right here
 
       ##TODO: Clone dockerfiles and Docker-composes: complete template
@@ -210,14 +208,6 @@
   #      copy:
   #        src: ./files/config.txt
   #        dest: /boot/config.txt
-
-  ####################
-  #Init or join swarm# TODO: mtache
-  ####################
-
-  ####################################
-  #Launch appropriate docker services#   #TODO: Think a little bit if this is really the appropriate place for this
-  ####################################
 
   ###################################
   #Changes pi passwords for security#   #TODO: Think a little bit if this is really the appropriate place for this

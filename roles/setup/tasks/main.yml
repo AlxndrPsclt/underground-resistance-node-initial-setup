@@ -2,7 +2,6 @@
 # tasks file for setup
 - name: Wait 120 seconds for target connection to become reachable/usable
   wait_for_connection:
-- setup:
 
 ##################
 #Users and groups#
@@ -16,30 +15,37 @@
     - ansible
     - docker
 
-- name: Load passwords from a file
-  #Passwords must be stored in the file located in vars/users/user_passwords.yml. This file contains entries for each account to create, associated to passwords hashed with sha512
+- name: Load passwords from the encrypted vault file
   include_vars:
-    file: users/user_passwords.yml
-    name: user_passwords
+    file: passwords/passwords.yml
+  name: passwords_pi
+
+- name: Load passwords from the encrypted vault file
+  include_vars:
+    file: passwords/passwords.yml
+  name: passwords_main_user
+
+- name: Load salt from the encrypted vault file
+  include_vars:
+    file: passwords/passwords.yml
+  name: passwords_salt
 
 - name: Create users
   become: yes
   user:
-    name: "{{item.key}}"
-    password: "{{item.value}}"
+    name: "alex"
+    password: "{{ passwords_main_user | password_hash('sha512', passwords_salt) }}"
     skeleton: "/etc/skel"
     shell: /bin/bash
     groups: ansible, docker, sudo   # Empty by default.
-  with_dict: "{{ user_passwords }}"
 
 - name: Set authorized key, removing all the authorized keys already set
   authorized_key:
-    user: "{{item.key}}"
+    user: "alex"
     key: "{{ lookup('file', '{{ HOME }}/.ssh/id_ecdsa.pub') }}"
     state: present
     exclusive: True
   become: yes
-  with_dict: "{{ user_passwords }}"
 
 #######################
 #Set hostnames and IPs#
@@ -73,8 +79,19 @@
   become: yes
   file:
     src: /usr/share/zoneinfo/Europe/Paris
-  dest: /etc/localtime
-  state: link
+    dest: /etc/localtime
+    state: link
+
+- name: Changes the password of user pi for added security
+  become: yes
+  user:
+    name: pi
+    update_password: always
+    password: "{{ passwords_pi | password_hash('sha512', passwords_salt) }}"
+
+
+
+- meta: end_play    #Usefull for dev: ends the play right here
 
 - name: Reboot node and stop polling.
   shell: reboot
