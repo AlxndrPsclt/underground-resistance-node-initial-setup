@@ -1,8 +1,8 @@
 ---
 cleanrpi:
   hosts:
-    #raspberrypi.local:
-    underground-resistance-001.local:
+    raspberrypi.local:
+    #underground-resistance-001.local:
   vars:
     ansible_connection: ssh
     ansible_user: pi

@@ -172,7 +172,7 @@
     - { dest: '/docker/configs', group: 'docker', mode: '0775' }
       #- { dest: '/ansible', group: 'ansible', mode: '0775' }
       #
-- meta: end_play    #Usefull for dev: ends the play right here
+#- meta: end_play    #Usefull for dev: ends the play right here
 
       ##TODO: Clone dockerfiles and Docker-composes: complete template
       # - name: Clone docker projects to run cluster services
@@ -181,14 +181,6 @@
       #     dest: /docker
 
       ##TODO: Create the volumes needed for the different services (should use a different role!!)
-
-
-      ############################
-      #Syncronise time on servers#
-      ############################
-      # - name: Set timezone to Europe/Paris
-      #   timezone:
-      #     name: Europe/Paris
 
 
   ################################
@@ -208,7 +200,3 @@
   #      copy:
   #        src: ./files/config.txt
   #        dest: /boot/config.txt
-
-  ###################################
-  #Changes pi passwords for security#   #TODO: Think a little bit if this is really the appropriate place for this
-  ####################################
