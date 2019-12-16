@@ -7,13 +7,13 @@
 #########
 - name: Clone traefik deploy
   git:
-    repo: 'git@gitlab.com:Underground-Resistance/dgtlfrdm-deploy-traefik.git'
+    repo: 'git@gitlab.com:Underground-Resistance/etrnl-deploy-traefik.git'
     dest: "/docker/deploys/traefik"
     key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.gitlab.priv"
 
 - name: Clone traefik config
   git:
-    repo: 'git@gitlab.com:Underground-Resistance/dgtlfrdm-config-traefik.git'
+    repo: 'git@gitlab.com:Underground-Resistance/etrnl-config-traefik.git'
     dest: "/docker/configs/traefik"
     key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.gitlab.priv"
 

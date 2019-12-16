@@ -14,5 +14,5 @@
     - role: keys
     - role: basic-config
     - role: swarm
-    - role: master-setup
+    - role: ssh-entrypoint
 
