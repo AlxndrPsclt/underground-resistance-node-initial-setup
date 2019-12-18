@@ -17,10 +17,10 @@
 
 - name: Copy gpg key from local to host, needed to decrypt pass files
   copy:
-    src: /home/alex/.gpg
+    src: "{{ LOCAL_HOME }}/.gpg"
     dest: "{{ HOME }}"
-    owner: alex
-    group: alex
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
     mode: '0744'
   register: new_key
 
@@ -46,45 +46,37 @@
   become: yes
   file:
     path: "{{ HOME }}/.ssh/keys"
-    group: alex
-    owner: alex
+    group: "{{ USER }}"
+    owner: "{{ USER }}"
     mode: "0755"
     state: directory
-
-    #- name: Display paths of all .txt files in dir
-    #  debug: msg={{ lookup('fileglob', '/home/alex/.ssh/keys/*.priv') }}
-    #
-    #- name: Display paths of all non public files in dir
-    #  debug: msg={{ lookup('fileglob', '/home/alex/.ssh/keys/*.pub') }}
-
-    #- meta: end_play    #Usefull for dev: ends the play right here
 
 - name: Copy public ssh deploy key from local to host, needed to clone configs
   copy:
     src: "{{ item }}"
     dest: "{{ HOME }}/.ssh/keys/{{ item | basename }}"
-    owner: alex
-    group: alex
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
     mode: '0755'
   with_fileglob:
-    - '/home/alex/.ssh/keys/*.pub'
+    - '{{ LOCAL_HOME }}/.ssh/keys/*.pub'
 
 - name: Copy private ssh deploy key from local to host, needed to clone configs
   copy:
     src: "{{ item }}"
     dest: "{{ HOME }}/.ssh/keys/{{ item | basename }}"
-    owner: alex
-    group: alex
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
     mode: '0600'
   with_fileglob:
-    - '/home/alex/.ssh/keys/*.priv'
+    - '{{ LOCAL_HOME }}/.ssh/keys/*.priv'
 
 - name: Make sure the known hosts file exists
   file:
     path: "{{ ssh_known_hosts_file }}"
     state: file
-    owner: alex
-    group: alex
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
     mode: '0644'
 
 - name: Check host name availability

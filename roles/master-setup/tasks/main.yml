@@ -17,3 +17,35 @@
     dest: "/docker/configs/traefik"
     key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.gitlab.priv"
 
+- name: Update repositories cache and install tools necessary for docker-compose
+  become: yes
+  apt:
+    name: [ 'apache2-utils' ]
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Adds config for traefik monitor user
+  shell: "echo $(htpasswd -nb admin rBdd6lz8obPnVfp0oHEuquS3P) | sed -e s/\\$/\\$\\$/g > {{ DOCKER_CONFIGS }}/traefik/users/usersfile"
+  creates: "{{ DOCKER_CONFIGS }}/users/usersfile"
+
+
+
+    #
+    #- name: Decrypt traefik config
+    #  shell: git-crypt unlock
+    #  args:
+    #    chdir: /docker/config/traefik
+
+- name: Add traefik overlay network
+  docker_network:
+    name: traefik_net
+    driver: "overlay"
+
+- name: Add folder for traefik logs
+  become: yes
+  file:
+    path: "/docker/logs/traefik"
+    owner: "root"
+    group: "docker"
+    state: directory
+

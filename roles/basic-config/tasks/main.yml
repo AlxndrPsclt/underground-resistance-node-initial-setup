@@ -12,7 +12,6 @@
 - name: Update repositories cache and install the most needed basic tools
   become: yes
   apt:
-    #name: ['git', 'vim-nox', 'curl', 'python-pip', 'git-crypt', 'gpg', 'pass']
     name: ['git', 'pass', 'git-crypt']
     update_cache: yes
     cache_valid_time: 3600
@@ -21,7 +20,7 @@
   git_config:
     name: user.name
     scope: global
-    value: 'alxndrpsclt'
+    value: "{{ GIT_NAME }}"
 
     #TODO: Properly extract personal conf from playbook
 
@@ -29,7 +28,7 @@
   git_config:
     name: user.email
     scope: global
-    value: 'alxndr.psclt@gmail.com'
+    value: "{{ GIT_EMAIL }}"
 
 - name: Configs git editor
   git_config:
@@ -166,10 +165,11 @@
     mode: "{{ item.mode }}"
     state: directory
   with_items:
-    - { dest: '/docker', group: 'root', mode: '0755' }
-    - { dest: '/docker/deploys', group: 'docker', mode: '0775' }
-    - { dest: '/docker/volumes', group: 'docker', mode: '0775' }
-    - { dest: '/docker/configs', group: 'docker', mode: '0775' }
+    - { dest: '{{ DOCKER_ROOT}}', group: 'root', mode: '0755' }
+    - { dest: '{{ DOCKER_DEPLOYS }}', group: 'docker', mode: '0775' }
+    - { dest: '{{ DOCKER_CONFIGS}}', group: 'docker', mode: '0775' }
+    - { dest: '{{ DOCKER_VOLUMES }}', group: 'docker', mode: '0775' }
+    - { dest: '{{ DOCKER_LOGS}}', group: 'docker', mode: '0775' }
       #- { dest: '/ansible', group: 'ansible', mode: '0775' }
       #
 #- meta: end_play    #Usefull for dev: ends the play right here

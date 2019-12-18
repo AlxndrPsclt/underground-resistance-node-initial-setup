@@ -11,8 +11,8 @@
 - hosts: cluster
   #  gather_facts: no
   roles:
-    - role: keys
-    - role: basic-config
-    - role: swarm
-    - role: ssh-entrypoint
+    #    - role: keys
+    #    - role: basic-config
+    #    - role: swarm
+    - role: master-setup
 

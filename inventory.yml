@@ -9,7 +9,9 @@ cleanrpi:
     ansible_ssh_pass: raspberry
     ansible_become_pass: raspberry
     ansible_port: 22
-    HOME: "/home/alex"
+    USER: "alex"
+    HOME: "/home/{{ USER }}"
+    LOCAL_HOME: "/home/{{ USER }}"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
     DESTINATION_NAME: "underground-resistance-001"
 
@@ -21,5 +23,14 @@ cluster:
     ansible_user: alex
     ansible_become_pass: '{{ passwords_main_user }}'
     ansible_port: 22
-    HOME: "/home/alex"
+    USER: "alex"
+    HOME: "/home/{{ USER }}"
+    LOCAL_HOME: "/home/{{ USER }}"
+    DOCKER_ROOT: "/docker"
+    DOCKER_DEPLOYS: "{{ DOCKER_ROOT }}/deploys"
+    DOCKER_CONFIGS: "{{ DOCKER_ROOT }}/configs"
+    DOCKER_VOLUMES: "{{ DOCKER_ROOT }}/volumes"
+    DOCKER_LOGS: "{{ DOCKER_ROOT }}/logs"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
+    GIT_NAME: "alxndrpsclt"
+    GIT_EMAIL: "alxndr.psclt@gmail.com"
