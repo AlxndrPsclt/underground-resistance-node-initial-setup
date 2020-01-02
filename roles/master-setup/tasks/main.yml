@@ -25,8 +25,9 @@
     cache_valid_time: 3600
 
 - name: Adds config for traefik monitor user
-  shell: "echo $(htpasswd -nb admin rBdd6lz8obPnVfp0oHEuquS3P) | sed -e s/\\$/\\$\\$/g > {{ DOCKER_CONFIGS }}/traefik/users/usersfile"
-  creates: "{{ DOCKER_CONFIGS }}/users/usersfile"
+  shell:
+    cmd: "echo $(htpasswd -nb admin rBdd6lz8obPnVfp0oHEuquS3P) | sed -e s/\\$/\\$\\$/g > {{ DOCKER_CONFIGS }}/traefik/users/usersfile"
+    creates: "{{ DOCKER_CONFIGS }}/users/usersfile"
 
 
 

@@ -102,6 +102,14 @@
   apt:
     autoremove: yes
 
+- name: Update system using apt
+  become: yes
+  cron:
+    name: "Update and upgrade cluster"
+    minute: "30"
+    hour: "6"
+    weekday: "6"
+    job: "/usr/bin/apt update && /usr/bin/apt -y full-upgrade"
 
 #################
 ##Install docker#
