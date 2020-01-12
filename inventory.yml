@@ -13,11 +13,11 @@ cleanrpi:
     HOME: "/home/{{ USER }}"
     LOCAL_HOME: "/home/{{ USER }}"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
-    DESTINATION_NAME: "underground-resistance-001"
+    DESTINATION_NAME: "underground-resistance-002"
 
 cluster:
   hosts:
-    underground-resistance-001.local:
+    underground-resistance-002.local:
   vars:
     ansible_connection: ssh
     ansible_user: alex
