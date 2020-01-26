@@ -72,9 +72,10 @@
     - '{{ LOCAL_HOME }}/.ssh/keys/*.priv'
 
 - name: Make sure the known hosts file exists
+  become: true
   file:
     path: "{{ ssh_known_hosts_file }}"
-    state: file
+    state: touch
     owner: "{{ USER }}"
     group: "{{ USER }}"
     mode: '0644'

@@ -11,9 +11,9 @@
 - hosts: cluster
   #  gather_facts: no
   roles:
-    - role: keys
-    - role: basic-config
+    #    - role: keys
+    #- role: basic-config
     #- role: swarm-init
-    #- role: swarm-join
+    - role: swarm-join
     #- role: master-setup
 
