@@ -75,6 +75,11 @@
     group: root
     mode: 0644
 
+- name: Add new hostname to hosts
+  add_host:
+    name: '{{ DESTINATION_NAME }}.local'
+    groups: cluster
+
 - name: Creates a link to update timezone
   become: yes
   file:
