@@ -2,7 +2,6 @@
 cleanrpi:
   hosts:
     raspberrypi.local:
-    #underground-resistance-001.local:
   vars:
     ansible_connection: ssh
     ansible_user: pi
@@ -13,11 +12,11 @@ cleanrpi:
     HOME: "/home/{{ USER }}"
     LOCAL_HOME: "/home/{{ USER }}"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
-    DESTINATION_NAME: "underground-resistance-004"
+    DESTINATION_NAME: "etrnl-001"
 
 cluster:
   hosts:
-    underground-resistance-004.local:
+    etrnl-001.local:
   vars:
     ansible_connection: ssh
     ansible_user: alex
