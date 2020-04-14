@@ -10,5 +10,5 @@
   docker_swarm:
     state: join
     advertise_addr: eth0
-    join_token: SWMTKN-1-2qenpoezm7ztklufmj9ewsbp2qgn56irbmqjjuicpxybcfpgym-6lcqmpmyrx9wh6elhv3r4pkxs
+    join_token: SWMTKN-1-04johkplyg5wzpv4g2xaky3cs4oz567nxntd3z9tvackc90hts-8kvb55yoc3ewbiioztd2ogb89
     remote_addrs: [ '192.168.1.8:2377' ]
