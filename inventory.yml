@@ -12,11 +12,37 @@ cleanrpi:
     HOME: "/home/{{ USER }}"
     LOCAL_HOME: "/home/{{ USER }}"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
-    DESTINATION_NAME: "etrnl-002"
+    DESTINATION_NAME: "etrnl-005"
 
 cluster:
   hosts:
+    etrnl-005.local:
+  vars:
+    ansible_connection: ssh
+    ansible_user: alex
+    ansible_become_pass: '{{ passwords_main_user }}'
+    ansible_port: 22
+    USER: "alex"
+    HOME: "/home/{{ USER }}"
+    LOCAL_HOME: "/home/{{ USER }}"
+    DOCKER_ROOT: "/docker"
+    DOCKER_DEPLOYS: "{{ DOCKER_ROOT }}/deploys"
+    DOCKER_CONFIGS: "{{ DOCKER_ROOT }}/configs"
+    DOCKER_VOLUMES: "{{ DOCKER_ROOT }}/volumes"
+    DOCKER_LOGS: "{{ DOCKER_ROOT }}/logs"
+    CONFIG_PERSO: "{{ HOME }}/.config/perso"
+    GIT_NAME: "alxndrpsclt"
+    GIT_EMAIL: "alxndr.psclt@gmail.com"
+
+
+
+fullcluster:
+  hosts:
+    etrnl-001.local:
     etrnl-002.local:
+    etrnl-003.local:
+    etrnl-004.local:
+    etrnl-005.local:
   vars:
     ansible_connection: ssh
     ansible_user: alex
