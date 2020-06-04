@@ -30,7 +30,6 @@
     creates: "{{ DOCKER_CONFIGS }}/users/usersfile"
 
 
-
     #
     #- name: Decrypt traefik config
     #  shell: git-crypt unlock
@@ -49,4 +48,3 @@
     owner: "root"
     group: "docker"
     state: directory
-

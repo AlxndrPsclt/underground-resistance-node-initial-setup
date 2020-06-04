@@ -1,5 +1,4 @@
 ---
-#TODO: When the time comes, split this file in different roles
 #TODO: Create dynamic inventory using nmap to find RPIs on the network (using their mac adresses), and a redis/consul/etcd shared truth
 - hosts: fullcluster
   #gather_facts: no
