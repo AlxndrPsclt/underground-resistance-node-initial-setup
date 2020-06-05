@@ -7,6 +7,13 @@
 #
 
 - name: Upgrade all packages to the latest version
+  become: yes
   apt:
     name: "*"
     state: latest
+
+- name: Reboot a slow machine that might have lots of updates to apply
+  become: yes
+  reboot:
+    reboot_timeout: 180
+  throttle: 1

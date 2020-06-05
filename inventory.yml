@@ -43,6 +43,7 @@ fullcluster:
     etrnl-003.local:
     etrnl-004.local:
     etrnl-005.local:
+    etrnl-006.local:
   vars:
     ansible_connection: ssh
     ansible_user: alex

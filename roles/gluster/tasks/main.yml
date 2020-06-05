@@ -4,57 +4,57 @@
 #####################
 #Installing software#
 #####################
-#- name: Update repositories cache and install gluster server and client
-#  become: yes
-#  apt:
-#    name: ['glusterfs-server', 'glusterfs-client']
-#    update_cache: yes
-#    cache_valid_time: 3600
+- name: Update repositories cache and install gluster server and client
+  become: yes
+  apt:
+    name: ['glusterfs-server', 'glusterfs-client']
+    update_cache: yes
+    cache_valid_time: 3600
 
-#- name: enable service glusterfs
-#  systemd:
-#    name: glusterd
-#    #scope: user
-#    state: started
-#    enabled: yes
-#    masked: no
-#  become: yes
-#
-#- name: Ansible register variable basic example
-#  shell: "blkid -o export /dev/mmcblk0p3"
-#  register: blkid_output
-#  become: true
-#  changed_when: False
-#
-#- name: Display partuid of data partition
-#  debug:
-#    var: blkid_output["stdout_lines"]
-#
-#- name: Add folder for glusterfs mount
-#  become: yes
-#  file:
-#    path: "/shared/mmcblk0p3"
-#    owner: "root"
-#    group: "docker"
-#    state: directory
-#
-#- name: Mount up device by PARTUID
-#  mount:
-#    path: /shared/mmcblk0p3
-#    src: "{{ blkid_output['stdout_lines'][3] }}"
-#    fstype: ext4
-#    opts: defaults
-#    state: mounted
-#    backup: yes
-#  become: yes
-#
-#- name: Add folder for glusterfs brick
-#  become: yes
-#  file:
-#    path: "/shared/mmcblk0p3/brick"
-#    owner: "root"
-#    group: "docker"
-#    state: directory
+- name: enable service glusterfs
+  systemd:
+    name: glusterd
+    #scope: user
+    state: started
+    enabled: yes
+    masked: no
+  become: yes
+
+- name: Ansible register variable basic example
+  shell: "blkid -o export /dev/mmcblk0p3"
+  register: blkid_output
+  become: true
+  changed_when: False
+
+- name: Display partuid of data partition
+  debug:
+    var: blkid_output["stdout_lines"]
+
+- name: Add folder for glusterfs mount
+  become: yes
+  file:
+    path: "/shared/mmcblk0p3"
+    owner: "root"
+    group: "docker"
+    state: directory
+
+- name: Mount up device by PARTUID
+  mount:
+    path: /shared/mmcblk0p3
+    src: "{{ blkid_output['stdout_lines'][3] }}"
+    fstype: ext4
+    opts: defaults
+    state: mounted
+    backup: yes
+  become: yes
+
+- name: Add folder for glusterfs brick
+  become: yes
+  file:
+    path: "/shared/mmcblk0p3/brick"
+    owner: "root"
+    group: "docker"
+    state: directory
 
 - name: Display result of inventory_hostname
   set_fact:
@@ -65,16 +65,80 @@
     var: next_node
 
 - name: Glusterfs peer probe
-  shell: "gluster peer probe {{ next_node }}"
-  register: gluster_probe_output
+  shell: "gluster peer probe {{ item }}"
   become: true
+  loop:
+    - etrnl-002.local
+    - etrnl-003.local
+    - etrnl-004.local
+    - etrnl-005.local
+    - etrnl-006.local
+  run_once: true
 
-    #- name: "Example2: Add fstab line for shared data partition"
-    #  become: yes
-    #  lineinfile:
-    #    path: /etc/fstab
-    #    line: "{{ blkid_output['stdout_lines'][3] }}  /shared/mmcblk0p3 ext4 defaults 0 0"
-    #    state: present
-    #    backup: yes
-    #  register: example2out
+- name: Upgrade all packages to the latest version
+  become: yes
+  apt:
+    name: "*"
+    state: latest
+
+- name: Update repositories cache and install fuse3
+  become: yes
+  apt:
+    name: ['libfuse3-3', 'fuse3']
+    update_cache: yes
+    cache_valid_time: 3600
+    register: fuseinstall
+
+- name: Reboot a slow machine that might have lots of updates to apply
+  become: yes
+  reboot:
+    reboot_timeout: 180
+  throttle: 1
+  when: fuseinstall.changed
+
+- name: Add the fuse module
+  become: yes
+  modprobe:
+    name: fuse
+    state: present
+
+- name: create gluster volume
+  become: yes
+  gluster_volume:
+    state: present
+    name: gv0
+    bricks: /shared/mmcblk0p3/brick
+    rebalance: yes
+    replicas: 3
+    cluster:
+      - etrnl-001.local
+      - etrnl-002.local
+      - etrnl-003.local
+      - etrnl-004.local
+      - etrnl-005.local
+      - etrnl-006.local
+  run_once: true
+
+- name: start gluster volume
+  become: yes
+  gluster_volume:
+    state: started
+    name: gv0
+
+- name: Add folder for mounting glusterfs volume
+  become: yes
+  file:
+    path: "/mnt/gv0"
+    owner: "root"
+    group: "docker"
+    state: directory
+
+- name: Mount Glusterfs basic volume
+  become: yes
+  mount:
+    path: /mnt/gv0
+    src: localhost:/gv0
+    fstype: glusterfs
+    opts: defaults,_netdev,backupvolfile-server=localhost
+    state: mounted
 
