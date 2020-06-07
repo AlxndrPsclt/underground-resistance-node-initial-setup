@@ -156,12 +156,12 @@
 #
 #- debug: msg="play_hosts={{play_hosts}}"
 #
-#- name: Clone etrnl services scripts
-#  git:
-#    repo: git@gitlab.com:Underground-Resistance/etrnl-services.git
-#    dest: /mnt/gv0/deploys/etrnl-services
-#    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.gitlab.priv"
-#  run_once: true
+- name: Clone etrnl services scripts
+  git:
+    repo: git@gitlab.com:Underground-Resistance/etrnl-services.git
+    dest: /mnt/gv0/deploys/etrnl-services
+    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.gitlab.priv"
+  run_once: true
 #
 #
 #- name: Create a docker traefik network
