@@ -1,9 +1,9 @@
----
-# tasks file for gluster
-
-#####################
-#Installing software#
-#####################
+##---
+## tasks file for gluster
+#
+######################
+##Installing software#
+######################
 - name: Update repositories cache and install gluster server and client
   become: yes
   apt:
@@ -87,7 +87,7 @@
     name: ['libfuse3-3', 'fuse3']
     update_cache: yes
     cache_valid_time: 3600
-    register: fuseinstall
+  register: fuseinstall
 
 - name: Reboot a slow machine that might have lots of updates to apply
   become: yes
@@ -129,8 +129,8 @@
   become: yes
   file:
     path: "/mnt/gv0"
-    owner: "root"
-    group: "docker"
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
     state: directory
 
 - name: Mount Glusterfs basic volume
@@ -142,3 +142,55 @@
     opts: defaults,_netdev,backupvolfile-server=localhost
     state: mounted
 
+
+
+- name: Glusterfs docker plugin install
+  shell: "docker plugin install --alias glusterfs   trajano/glusterfs-volume-plugin   --grant-all-permissions --disable"
+  register: glusterplugin
+  changed_when: "'already exists' not in glusterplugin.stderr"
+  failed_when: "'already exists' not in glusterplugin.stderr"
+
+#TODO: Add checking to make idempotent
+- name: Glusterfs docker plugin set cluster servers
+  shell: "docker plugin set glusterfs SERVERS=etrnl-001.local,etrnl-002.local,etrnl-003.local,etrnl-004.local,etrnl-005.local,etrnl-006.local"
+
+- debug: msg="play_hosts={{play_hosts}}"
+
+- name: Clone etrnl services scripts
+  git:
+    repo: git@gitlab.com:Underground-Resistance/etrnl-services.git
+    dest: /mnt/gv0/deploys/etrnl-services
+    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.gitlab.priv"
+  run_once: true
+
+
+- name: Create a docker traefik network
+  docker_network:
+    name: traefik_net
+    driver: overlay
+  run_once: true
+
+
+- name: Install virtualenv & cie using pip
+  become: yes
+  pip:
+    name: ['jsondiff']
+
+
+
+- name: Deploy a traefik stack from a compose file
+  docker_stack:
+    state: present
+    name: traefik
+    compose:
+      - /mnt/gv0/deploys/etrnl-services/etrnl-traefik-deploy/traefik-compose.yml
+  run_once: true
+
+- name: Deploy a whoami stack from a compose file
+  docker_stack:
+    state: present
+    name: whoami
+    compose:
+      - /mnt/gv0/deploys/etrnl-services/etrnl-whoami-deploy/whoami-compose.yml
+  run_once: true
+  
