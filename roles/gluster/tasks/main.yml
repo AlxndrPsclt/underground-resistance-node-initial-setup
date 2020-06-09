@@ -242,3 +242,29 @@
       - /mnt/gv0/deploys/etrnl-services/etrnl-gitea-deploy/gitea-compose.yml
   run_once: true
 
+- name: Add folder for syncthing config volume
+  become: yes
+  file:
+    path: "/mnt/gv0/volumes/syncthing/syncthing/config"
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
+    state: directory
+  run_once: true
+
+- name: Add folder for syncthing data volume
+  become: yes
+  file:
+    path: "/mnt/gv0/volumes/syncthing/syncthing/data"
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
+    state: directory
+  run_once: true
+
+- name: Deploy a syncthing stack from a compose file
+  docker_stack:
+    state: present
+    name: syncthing
+    compose:
+      - /mnt/gv0/deploys/etrnl-services/etrnl-syncthing-deploy/syncthing-compose.yml
+  run_once: true
+
