@@ -161,6 +161,7 @@
     repo: git@gitlab.com:Underground-Resistance/etrnl-services.git
     dest: /mnt/gv0/deploys/etrnl-services
     key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.gitlab.priv"
+    force: yes
   run_once: true
 #
 #
@@ -176,13 +177,13 @@
 #  pip:
 #    name: ['jsondiff']
 #
-#- name: Deploy a traefik stack from a compose file
-#  docker_stack:
-#    state: present
-#    name: traefik
-#    compose:
-#      - /mnt/gv0/deploys/etrnl-services/etrnl-traefik-deploy/traefik-compose.yml
-#  run_once: true
+- name: Deploy a traefik stack from a compose file
+  docker_stack:
+    state: present
+    name: traefik
+    compose:
+      - /mnt/gv0/deploys/etrnl-services/etrnl-traefik-deploy/traefik-compose.yml
+  run_once: true
 #
 #- name: Deploy a whoami stack from a compose file
 #  docker_stack:
@@ -196,6 +197,41 @@
   docker_network:
     name: gitea_net
     driver: overlay
+  run_once: true
+
+- name: Add folder for gitea logs
+  become: yes
+  file:
+    path: "/docker/logs/gitea"
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
+    state: directory
+
+- name: Add folder for gitea volumes
+  become: yes
+  file:
+    path: "/mnt/gv0/volumes/gitea/gitea/varlibgitea"
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
+    state: directory
+  run_once: true
+
+- name: Add folder for gitea volume 2
+  become: yes
+  file:
+    path: "/mnt/gv0/volumes/gitea/gitea/usrsharegitea"
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
+    state: directory
+  run_once: true
+
+- name: Add folder for gitea-db volume
+  become: yes
+  file:
+    path: "/mnt/gv0/volumes/gitea/gitea-db/config"
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
+    state: directory
   run_once: true
 
 - name: Deploy a gitea stack from a compose file
