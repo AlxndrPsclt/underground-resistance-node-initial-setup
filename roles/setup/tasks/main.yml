@@ -4,13 +4,12 @@
 ##################
 #Users and groups#
 ##################
-- name: Ensure groups ansible and docker exist
+- name: Ensure groups docker exist
   become: yes
   group:
     name: "{{ item }}"
     state: present
   with_items:
-    - ansible
     - docker
 
 - name: Load passwords from the encrypted vault file
