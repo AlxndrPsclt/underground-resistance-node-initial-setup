@@ -4,6 +4,13 @@
 
 # Installing basic tools needed for future installs
 
+- name: Make sure the community repos are activated
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/apk/repositories
+    regexp: '^#(.*\d/community)'
+    line: '\1'
+
 - name: Install packages for minimal install
   become: yes
   apk:
@@ -157,7 +164,8 @@
 
 - name: Saves all installs
   become: yes
-  cmd: "lbu commit -d"
+  shell:
+    cmd: "lbu commit -d"
 
   #- debug: var=res
   #- meta: end_play    #Usefull for dev: ends the play right here
