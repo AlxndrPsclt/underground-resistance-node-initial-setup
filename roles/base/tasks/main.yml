@@ -1,0 +1,173 @@
+---
+# tasks file for minimal
+#
+
+# Installing basic tools needed for future installs
+
+- name: Install packages for minimal install
+  become: yes
+  apk:
+    name:
+      - git
+      - vim
+      - tmux
+      - less
+        #- build-base
+      - htop
+        #- mosh
+    state: latest
+    update_cache: yes
+
+- name: Configs git usual name
+  git_config:
+    name: user.name
+    scope: global
+    value: 'alxndrpsclt'
+
+- name: Configs git usual email
+  git_config:
+    name: user.email
+    scope: global
+    value: 'alxndr.psclt@gmail.com'
+
+- name: Configs git editor
+  git_config:
+    name: core.editor
+    scope: global
+    value: vim
+
+#TODO: Import gpg key
+
+- name: Create keys directory
+  become: yes
+  file:
+    path: "{{ HOME }}/.ssh/keys"
+    group: "wheel"
+    owner: "{{ USER }}"
+    mode: "0755"
+    state: directory
+
+- name: Copy public ssh deploy key from local to host, needed to clone configs
+  copy:
+    src: "{{ item }}"
+    dest: "{{ HOME }}/.ssh/keys/{{ item | basename }}"
+    owner: "{{ USER }}"
+    group: "wheel"
+    mode: '0755'
+  with_fileglob:
+    - '{{ LOCAL_HOME }}/.ssh/keys/*.pub'
+
+- name: Copy private ssh deploy key from local to host, needed to clone configs
+  copy:
+    src: "{{ item }}"
+    dest: "{{ HOME }}/.ssh/keys/{{ item | basename }}"
+    owner: "{{ USER }}"
+    group: "wheel"
+    mode: '0600'
+  with_fileglob:
+    - '{{ LOCAL_HOME }}/.ssh/keys/*.priv'
+
+- name: Copy git{hub,lab} ssh config to allow interacting with the service
+  copy:
+    src: 'files/ssh_basic_config'
+    dest: "{{ HOME }}/.ssh/config"
+    owner: "{{ USER }}"
+    group: 'wheel'
+    mode: '0644'
+
+      #- name: Generate local SSH keys
+      #  shell: "ssh-keygen -t ed25519 -f {{ HOME }}/.ssh/id_ed25519 -q -N ''"
+      #  args:
+      #    creates: "{{ HOME }}/.ssh/id_ed25519"
+
+#TODO: Extract variables like alxndrpsclt and put it in a playbook config file
+#
+
+
+  # Wallpapers
+
+- name: Create a config directory if it does not exist
+  file:
+    path: "{{ HOME }}/.config"
+    state: directory
+    mode: '0755'
+
+#- name: Clone personal configs
+#  git:
+#    repo: 'git@github.com:AlxndrPsclt/mnml-config.git'
+#    dest: "{{ HOME }}/.config/perso"
+#    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.github.priv"
+#    accept_hostkey: yes
+
+
+
+
+#- name: Register existence of etrnl config links
+#  stat:
+#    path: "{{ item.dest }}"
+#  loop: "{{ links_to_create }}"
+#  register: link_register
+#
+#- name: Remove etrnl config file if some default exists (not links)
+#  file:
+#    path: "{{ item.stat.path }}"
+#    state: absent
+#  loop: "{{ link_register.results }}"
+#  when: item.stat.islnk is defined and item.stat.islnk == False
+#
+#- name: Create symbolic link for cluster config tools
+#  file:
+#    src: "{{ item.src }}"
+#    dest: "{{ item.dest }}"
+#    state: link
+#  loop: "{{ links_to_create }}"
+
+
+
+- name: Clone personal vim config
+  git:
+    repo: "git@github.com:AlxndrPsclt/mnml-vim.git"
+    dest: "{{ HOME }}/.vim"
+    key_file: "{{ HOME }}/.ssh/keys/id_ed25519.deploy.github.priv"
+    accept_hostkey: yes
+
+- name: Clone vundle for vim plugins
+  git:
+    repo: "https://github.com/VundleVim/Vundle.vim.git"
+    dest: "{{ HOME }}/.vim/bundle/Vundle.vim"
+    accept_hostkey: yes
+
+
+- name: enable service cgroups
+  become: yes
+  service:
+    name: cgroups
+    state: started
+    enabled: yes
+
+- name: Install docker and k3s
+  become: yes
+  apk:
+    name:
+      - docker
+      - k3s
+    state: latest
+    update_cache: yes
+
+
+
+  #- debug: var=res
+  #- meta: end_play    #Usefull for dev: ends the play right here
+  #
+  #
+  #
+  ##
+  #- name: Update system using apt
+  #  become: yes
+  #  cron:
+  #    name: "Update and upgrade cluster"
+  #    minute: "30"
+  #    hour: "6"
+  #    weekday: "6"
+  #    job: "/usr/bin/apt update && /usr/bin/apt -y full-upgrade"
+  #

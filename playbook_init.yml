@@ -1,8 +1,0 @@
----
-#TODO: When the time comes, split this file in different roles
-#TODO: Create dynamic inventory using nmap to find RPIs on the network (using their mac adresses), and a redis/consul/etcd shared truth
-- hosts: cleanrpi
-  #gather_facts: no
-  roles:
-    #Minimal config
-    - role: setup

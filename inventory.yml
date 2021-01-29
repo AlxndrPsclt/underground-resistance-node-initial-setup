@@ -12,11 +12,11 @@ cleanrpi:
     HOME: "/home/{{ USER }}"
     LOCAL_HOME: "/home/{{ USER }}"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
-    DESTINATION_NAME: "etrnl-006"
+    DESTINATION_NAME: "etrnl-001"
 
 cluster:
   hosts:
-    etrnl-006.local:
+    etrnl-001.local:
   vars:
     ansible_connection: ssh
     ansible_user: alex

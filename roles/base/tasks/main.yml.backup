@@ -1,5 +1,5 @@
 ---
-# tasks file for keys
+# tasks file for base
 - name: Wait 120 seconds for target connection to become reachable/usable
   wait_for_connection:
 
