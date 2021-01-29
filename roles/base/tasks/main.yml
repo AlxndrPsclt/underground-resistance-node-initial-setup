@@ -155,6 +155,9 @@
     update_cache: yes
 
 
+- name: Saves all installs
+  become: yes
+  cmd: "lbu commit -d"
 
   #- debug: var=res
   #- meta: end_play    #Usefull for dev: ends the play right here
