@@ -1,7 +1,7 @@
 ---
 cluster:
   hosts:
-    192.168.1.201:
+    192.168.1.205:
   vars:
     ansible_connection: ssh
     ansible_user: alex
@@ -12,7 +12,7 @@ cluster:
     HOME: "/home/{{ USER }}"
     LOCAL_HOME: "/home/{{ USER }}"
     CONFIG_PERSO: "{{ HOME }}/.config/perso"
-    DESTINATION_NAME: "etrnl-001"
+    DESTINATION_NAME: "etrnl-005"
 
 #cluster:
 #  hosts:
