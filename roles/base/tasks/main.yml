@@ -10,6 +10,7 @@
     path: /etc/apk/repositories
     regexp: '^#(.*\d/community)'
     line: '\1'
+    backrefs: yes
 
 - name: Install packages for minimal install
   become: yes
@@ -21,6 +22,7 @@
       - less
         #- build-base
       - htop
+      - curl
         #- mosh
     state: latest
     update_cache: yes
@@ -153,25 +155,25 @@
     state: started
     enabled: yes
 
-- name: Ensure group docker exists
-  become: yes
-  group:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - docker
-
-- name: Create users
-  become: yes
-  user:
-    name: "alex"
-    groups: wheel, docker
+#- name: Ensure group docker exists
+#  become: yes
+#  group:
+#    name: "{{ item }}"
+#    state: present
+#  with_items:
+#    - docker
+#
+#- name: Create users
+#  become: yes
+#  user:
+#    name: "alex"
+#    groups: wheel
 
 - name: Install docker and k3s
   become: yes
   apk:
     name:
-      - docker
+#      - docker
       - k3s
     state: latest
     update_cache: yes

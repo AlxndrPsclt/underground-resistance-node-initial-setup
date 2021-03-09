@@ -1,7 +1,7 @@
 ---
 cluster:
   hosts:
-    192.168.1.202:
+    192.168.1.201:
   vars:
     ansible_connection: ssh
     ansible_user: alex

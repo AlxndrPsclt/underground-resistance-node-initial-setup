@@ -39,7 +39,7 @@ sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /et
 lbu commit -d
 
 mount -o remount,rw /media/mmcblk0p1
-rm /media/mmcblk0p1/headless.apkovl.tar.gz
+#rm /media/mmcblk0p1/headless.apkovl.tar.gz
 sed -i -e 's/$/ cgroup_memory=1 cgroup_enable=memory/' /media/mmcblk0p1/cmdline.txt
 #rm /media/mmcblk0p1/wifi.txt
 
